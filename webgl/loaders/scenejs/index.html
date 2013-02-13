@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>SceneJS webgl - loaders - Collada JSON Loader</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            font-family: Monospace;
+            background-color: #EEF;
+            margin: 0px;
+            overflow: hidden;
+        }
+
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display: block;
+        }
+
+        #info a, .button {
+            color: #f00;
+            font-weight: bold;
+            text-decoration: underline;
+            cursor: pointer
+        }
+    </style>
+</head>
+
+<body>
+<div id="info">
+    <a href="http://github.com/xeolabs/scenejs" target="_blank">SceneJS</a> - Collada JSON Loader
+</div>
+
+<script src="scenejs.js"></script>
+<script src="../../runtime/dependencies/require.js"></script>
+
+<script>
+    require.config({
+        baseUrl:".",
+        paths:{
+            loader:"../../.",
+            runtime:"../../runtime",
+            helpers:"../../helpers",
+            dependencies:"../../runtime/dependencies"
+        }});
+
+    require(['ColladaJsonLoader'], function () {
+
+        var mouseX = 0;
+        var mouseY = 0;
+
+        var windowHalfX = window.innerWidth / 2;
+        var windowHalfY = window.innerHeight / 2;
+
+        init();
+
+        function init() {
+
+            var scene = SceneJS.createScene({
+                sceneId:"demo",
+                canvasId:"myCanvas",
+                nodes:[
+                    {
+                        type:"lookAt",
+                        id:"theLookat",
+                        eye:{ x:0.0, y:0.0, z:10 },
+                        look:{ y:0.0 },
+                        up:{ y:1.0 },
+
+                        nodes:[
+                            {
+                                type:"camera",
+                                optics:{
+                                    type:"perspective",
+                                    fovy:25.0,
+                                    aspect:1.47,
+                                    near:0.10,
+                                    far:300.0
+                                },
+
+                                nodes:[
+                                    {
+                                        type:"lights",
+                                        lights:[
+                                            {
+                                                mode:"dir",
+                                                color:{ r:1.0, g:1.0, b:1.0 },
+                                                diffuse:true,
+                                                specular:true,
+                                                dir:{ x:1.0, y:0.0, z:-1.0 }
+                                            },
+                                            {
+                                                mode:"dir",
+                                                color:{ r:1.0, g:1.0, b:1.0 },
+                                                diffuse:true,
+                                                specular:true,
+                                                dir:{ x:0.0, y:1.0, z:1.0 }
+                                            },
+                                            {
+                                                mode:"dir",
+                                                color:{ r:1.0, g:1.0, b:1.0 },
+                                                diffuse:true,
+                                                specular:true,
+                                                dir:{ x:-1.0, y:0.0, z:0.0 }
+                                            }
+                                        ],
+                                        nodes:[
+                                            {
+                                                type:"node",
+                                                id:"putModelHere",
+                                                nodes:[
+                                                    {
+
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            });
+
+            var lookat = scene.getNode("theLookat");
+            var contentRoot = scene.getNode("putModelHere");
+
+            var loader = new SceneJS.ColladaJsonLoader(contentRoot);
+
+            //var objSrc = "../../apps/viewer/model/rambler/Rambler.json";
+            //var objSrc = "../../apps/viewer/model/wine/wine.json";
+            //var objSrc = "../../apps/viewer/model/SuperMurdoch/SuperMurdoch.json";
+            var objSrc = "../../apps/viewer/model/duck/duck.json";
+
+            var node = loader.load(objSrc, function (object) {
+                // To delay adding the collada data to the scene until it's fully loaded, attach object to the scene here instead of using the return value
+            });
+
+            document.addEventListener('mousemove', onDocumentMouseMove, false);
+
+            scene.start({
+                idleFunc:function () {
+
+                    var look = lookat.getLook();
+
+                    look.x += ( mouseX - look.x ) * .05;
+                    look.z += ( -mouseY - look.z ) * .05;
+
+                    lookat.setLook(look);
+                }
+            });
+        }
+
+        function onDocumentMouseMove(event) {
+            mouseX = ( event.clientX - windowHalfX ) / 2;
+            mouseY = ( event.clientY - windowHalfY ) / 2;
+        }
+
+    });
+</script>
+
+</body>
+</html>
